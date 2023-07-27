@@ -34,5 +34,5 @@ func main() {
 		log.Fatalf("failed to get note by id: %v", err)
 	}
 
-	log.Printf(color.RedString("Note info:\n"), color.GreenString("%v", r.GetNote()))
+	log.Printf(color.RedString("Note info:\n"), color.GreenString("%+v", r.GetNote()))
 }
