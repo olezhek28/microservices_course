@@ -29,7 +29,7 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 			Id: req.GetId(),
 			Info: &desc.NoteInfo{
 				Title:    gofakeit.BeerName(),
-				Context:  gofakeit.IPv4Address(),
+				Content:  gofakeit.IPv4Address(),
 				Author:   gofakeit.Name(),
 				IsPublic: gofakeit.Bool(),
 			},

@@ -13,7 +13,7 @@ import (
 func main() {
 	session := &desc.NoteInfo{
 		Title:    gofakeit.BeerName(),
-		Context:  gofakeit.IPv4Address(),
+		Content:  gofakeit.IPv4Address(),
 		Author:   gofakeit.Name(),
 		IsPublic: gofakeit.Bool(),
 	}
