@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  REGISTRY: "cr.selcloud.ru/olezhek28"
+  IMAGE_NAME: "crud-server"
+  CONTAINER_NAME: "crud-server-container"
+
+jobs:
+  image-build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Registry
+        run: docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
+
+      - name: Build and Push Docker Image
+        run: |
+          TAG_NAME=$(echo $GITHUB_SHA | head -c7)
+          docker buildx create --use
+          docker buildx build --no-cache --push --tag $REGISTRY/$IMAGE_NAME:$TAG_NAME -f week_2/grpc/Dockerfile week_2/grpc/ 
+
+  deploy-image:
+    runs-on: ubuntu-latest
+    needs: image-build-and-push
+
+    steps:
+      - name: Deploy to Selectel Cloud via SSH action
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME
+          script: |
+            # Set up variables
+            TAG_NAME=$(echo $GITHUB_SHA | head -c7)
+            
+            # Login into Selectel Registry
+            docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
+            
+            # Stop running container
+            docker stop $CONTAINER_NAME
+            
+            # Remove old container
+            docker rm $CONTAINER_NAME
+            
+            # Run a new container from a new image
+            docker run -d -p 50051:50051 --name $CONTAINER_NAME -t $REGISTRY/$IMAGE_NAME:$TAG_NAME
