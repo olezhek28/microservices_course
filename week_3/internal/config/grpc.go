@@ -13,7 +13,7 @@ const (
 )
 
 type GRPCConfig interface {
-	GRPCAddress() string
+	Address() string
 }
 
 type grpcConfig struct {
@@ -38,6 +38,6 @@ func NewGRPCConfig() (GRPCConfig, error) {
 	}, nil
 }
 
-func (cfg *grpcConfig) GRPCAddress() string {
+func (cfg *grpcConfig) Address() string {
 	return net.JoinHostPort(cfg.host, cfg.port)
 }
