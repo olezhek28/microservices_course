@@ -31,7 +31,7 @@ func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
-func (s *serviceProvider) GetPGConfig() config.PGConfig {
+func (s *serviceProvider) PGConfig() config.PGConfig {
 	if s.pgConfig == nil {
 		cfg, err := config.NewPGConfig()
 		if err != nil {
@@ -44,7 +44,7 @@ func (s *serviceProvider) GetPGConfig() config.PGConfig {
 	return s.pgConfig
 }
 
-func (s *serviceProvider) GetGRPCConfig() config.GRPCConfig {
+func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	if s.grpcConfig == nil {
 		cfg, err := config.NewGRPCConfig()
 		if err != nil {
@@ -57,9 +57,9 @@ func (s *serviceProvider) GetGRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
-func (s *serviceProvider) GetDBClient(ctx context.Context) db.Client {
+func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
-		cl, err := pg.New(ctx, s.GetPGConfig().DSN())
+		cl, err := pg.New(ctx, s.PGConfig().DSN())
 		if err != nil {
 			log.Fatalf("failed to create db client: %v", err)
 		}
@@ -76,25 +76,25 @@ func (s *serviceProvider) GetDBClient(ctx context.Context) db.Client {
 	return s.dbClient
 }
 
-func (s *serviceProvider) GetNoteRepository(ctx context.Context) repository.NoteRepository {
+func (s *serviceProvider) NoteRepository(ctx context.Context) repository.NoteRepository {
 	if s.noteRepository == nil {
-		s.noteRepository = noteRepository.NewRepository(s.GetDBClient(ctx))
+		s.noteRepository = noteRepository.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.noteRepository
 }
 
-func (s *serviceProvider) GetNoteService(ctx context.Context) service.NoteService {
+func (s *serviceProvider) NoteService(ctx context.Context) service.NoteService {
 	if s.noteService == nil {
-		s.noteService = noteService.NewService(s.GetNoteRepository(ctx))
+		s.noteService = noteService.NewService(s.NoteRepository(ctx))
 	}
 
 	return s.noteService
 }
 
-func (s *serviceProvider) GetNoteImpl(ctx context.Context) *note.Implementation {
+func (s *serviceProvider) NoteImpl(ctx context.Context) *note.Implementation {
 	if s.noteImpl == nil {
-		s.noteImpl = note.NewImplementation(s.GetNoteService(ctx))
+		s.noteImpl = note.NewImplementation(s.NoteService(ctx))
 	}
 
 	return s.noteImpl
