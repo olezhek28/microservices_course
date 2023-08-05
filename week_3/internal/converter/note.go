@@ -7,7 +7,7 @@ import (
 	desc "github.com/olezhek28/microservices_course/week_3/pkg/note_v1"
 )
 
-func ToNoteFromRepo(note *model.Note) *desc.Note {
+func ToNoteFromService(note *model.Note) *desc.Note {
 	var updatedAt *timestamppb.Timestamp
 	if note.UpdatedAt.Valid {
 		updatedAt = timestamppb.New(note.UpdatedAt.Time)
@@ -15,13 +15,13 @@ func ToNoteFromRepo(note *model.Note) *desc.Note {
 
 	return &desc.Note{
 		Id:        note.ID,
-		Info:      ToNoteInfoFromRepo(note.Info),
+		Info:      ToNoteInfoFromService(note.Info),
 		CreatedAt: timestamppb.New(note.CreatedAt),
 		UpdatedAt: updatedAt,
 	}
 }
 
-func ToNoteInfoFromRepo(info model.NoteInfo) *desc.NoteInfo {
+func ToNoteInfoFromService(info model.NoteInfo) *desc.NoteInfo {
 	return &desc.NoteInfo{
 		Title:   info.Title,
 		Content: info.Content,
