@@ -116,7 +116,7 @@ func main() {
 		log.Fatalf("failed to get pg config: %v", err)
 	}
 
-	lis, err := net.Listen("tcp", grpcConfig.GRPCAddress())
+	lis, err := net.Listen("tcp", grpcConfig.Address())
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
