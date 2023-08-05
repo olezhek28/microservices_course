@@ -9,45 +9,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/olezhek28/microservices_course/week_3/internal/converter"
-	"github.com/olezhek28/microservices_course/week_3/internal/service"
 	desc "github.com/olezhek28/microservices_course/week_3/pkg/note_v1"
 
+	noteAPI "github.com/olezhek28/microservices_course/week_3/internal/api/note"
 	"github.com/olezhek28/microservices_course/week_3/internal/config"
 	noteRepository "github.com/olezhek28/microservices_course/week_3/internal/repository/note"
 	noteService "github.com/olezhek28/microservices_course/week_3/internal/service/note"
 )
-
-type server struct {
-	desc.UnimplementedNoteV1Server
-	noteService service.NoteService
-}
-
-func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	id, err := s.noteService.Create(ctx, converter.ToNoteInfoFromDesc(req.GetInfo()))
-	if err != nil {
-		return nil, err
-	}
-
-	log.Printf("inserted note with id: %d", id)
-
-	return &desc.CreateResponse{
-		Id: id,
-	}, nil
-}
-
-func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	noteObj, err := s.noteService.Get(ctx, req.GetId())
-	if err != nil {
-		return nil, err
-	}
-
-	log.Printf("id: %d, title: %s, body: %s, created_at: %v, updated_at: %v\n", noteObj.ID, noteObj.Info.Title, noteObj.Info.Content, noteObj.CreatedAt, noteObj.UpdatedAt)
-
-	return &desc.GetResponse{
-		Note: converter.ToNoteFromService(noteObj),
-	}, nil
-}
 
 func main() {
 	ctx := context.Background()
@@ -85,7 +53,7 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterNoteV1Server(s, &server{noteService: noteSrv})
+	desc.RegisterNoteV1Server(s, noteAPI.NewImplementation(noteSrv))
 
 	log.Printf("server listening at %v", lis.Addr())
 
