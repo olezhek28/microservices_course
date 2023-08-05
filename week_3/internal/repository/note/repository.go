@@ -6,10 +6,10 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/olezhek28/microservices_course/week_2/config/internal/repository"
-	"github.com/olezhek28/microservices_course/week_2/config/internal/repository/note/converter"
-	"github.com/olezhek28/microservices_course/week_2/config/internal/repository/note/model"
-	desc "github.com/olezhek28/microservices_course/week_2/config/pkg/note_v1"
+	"github.com/olezhek28/microservices_course/week_3/internal/repository"
+	"github.com/olezhek28/microservices_course/week_3/internal/repository/note/converter"
+	"github.com/olezhek28/microservices_course/week_3/internal/repository/note/model"
+	desc "github.com/olezhek28/microservices_course/week_3/pkg/note_v1"
 )
 
 const (
@@ -32,6 +32,7 @@ func NewRepository(db *pgxpool.Pool) repository.NoteRepository {
 
 func (r *repo) Create(ctx context.Context, info *desc.NoteInfo) (int64, error) {
 	builder := sq.Insert(tableName).
+		PlaceholderFormat(sq.Dollar).
 		Columns(titleColumn, contentColumn).
 		Values(info.Title, info.Content).
 		Suffix("RETURNING id")
@@ -52,6 +53,7 @@ func (r *repo) Create(ctx context.Context, info *desc.NoteInfo) (int64, error) {
 
 func (r *repo) Get(ctx context.Context, id int64) (*desc.Note, error) {
 	builder := sq.Select(idColumn, titleColumn, contentColumn, createdAtColumn, updatedAtColumn).
+		PlaceholderFormat(sq.Dollar).
 		From(tableName).
 		Where(sq.Eq{idColumn: id}).
 		Limit(1)

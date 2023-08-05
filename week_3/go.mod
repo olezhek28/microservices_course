@@ -1,10 +1,9 @@
-module github.com/olezhek28/microservices_course/week_2/config
+module github.com/olezhek28/microservices_course/week_3
 
 go 1.20
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.8.1

@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	desc "github.com/olezhek28/microservices_course/week_2/config/pkg/note_v1"
+	desc "github.com/olezhek28/microservices_course/week_3/pkg/note_v1"
 )
 
 type NoteRepository interface {

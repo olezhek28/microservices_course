@@ -3,8 +3,8 @@ package converter
 import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/olezhek28/microservices_course/week_2/config/internal/repository/note/model"
-	desc "github.com/olezhek28/microservices_course/week_2/config/pkg/note_v1"
+	"github.com/olezhek28/microservices_course/week_3/internal/repository/note/model"
+	desc "github.com/olezhek28/microservices_course/week_3/pkg/note_v1"
 )
 
 func ToNoteFromRepo(note *model.Note) *desc.Note {
@@ -21,7 +21,7 @@ func ToNoteFromRepo(note *model.Note) *desc.Note {
 	}
 }
 
-func ToNoteInfoFromRepo(info *model.Info) *desc.NoteInfo {
+func ToNoteInfoFromRepo(info model.Info) *desc.NoteInfo {
 	return &desc.NoteInfo{
 		Title:   info.Title,
 		Content: info.Content,

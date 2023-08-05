@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
-option go_package = "github.com/olezhek28/microservices_course/week_2/config/pkg/note_v1;note_v1";
+option go_package = "github.com/olezhek28/microservices_course/week_3/config/pkg/note_v1;note_v1";
 
 service NoteV1 {
   rpc Create(CreateRequest) returns (CreateResponse);
@@ -19,8 +19,6 @@ service NoteV1 {
 message NoteInfo {
   string title = 1;
   string content = 2;
-  string author = 3;
-  bool is_public = 4;
 }
 
 message Note {
