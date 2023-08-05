@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/jackc/pgx/v4/pgxpool"
-
 	"github.com/olezhek28/microservices_course/week_3/internal/api/note"
+	"github.com/olezhek28/microservices_course/week_3/internal/client/db"
+	"github.com/olezhek28/microservices_course/week_3/internal/client/db/pg"
 	"github.com/olezhek28/microservices_course/week_3/internal/closer"
 	"github.com/olezhek28/microservices_course/week_3/internal/config"
 	"github.com/olezhek28/microservices_course/week_3/internal/repository"
@@ -19,7 +19,7 @@ type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
 
-	pgPool         *pgxpool.Pool
+	dbClient       db.Client
 	noteRepository repository.NoteRepository
 
 	noteService service.NoteService
@@ -57,31 +57,28 @@ func (s *serviceProvider) GetGRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
-func (s *serviceProvider) GetPgPool(ctx context.Context) *pgxpool.Pool {
-	if s.pgPool == nil {
-		pool, err := pgxpool.Connect(ctx, s.GetPGConfig().DSN())
+func (s *serviceProvider) GetDBClient(ctx context.Context) db.Client {
+	if s.dbClient == nil {
+		cl, err := pg.New(ctx, s.GetPGConfig().DSN())
 		if err != nil {
-			log.Fatalf("failed to connect to database: %v", err)
+			log.Fatalf("failed to create db client: %v", err)
 		}
 
-		err = pool.Ping(ctx)
+		err = cl.DB().Ping(ctx)
 		if err != nil {
 			log.Fatalf("ping error: %s", err.Error())
 		}
-		closer.Add(func() error {
-			pool.Close()
-			return nil
-		})
+		closer.Add(cl.Close)
 
-		s.pgPool = pool
+		s.dbClient = cl
 	}
 
-	return s.pgPool
+	return s.dbClient
 }
 
 func (s *serviceProvider) GetNoteRepository(ctx context.Context) repository.NoteRepository {
 	if s.noteRepository == nil {
-		s.noteRepository = noteRepository.NewRepository(s.GetPgPool(ctx))
+		s.noteRepository = noteRepository.NewRepository(s.GetDBClient(ctx))
 	}
 
 	return s.noteRepository

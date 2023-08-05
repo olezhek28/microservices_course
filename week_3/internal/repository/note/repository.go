@@ -4,8 +4,8 @@ import (
 	"context"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4/pgxpool"
 
+	"github.com/olezhek28/microservices_course/week_3/internal/client/db"
 	"github.com/olezhek28/microservices_course/week_3/internal/model"
 	"github.com/olezhek28/microservices_course/week_3/internal/repository"
 	"github.com/olezhek28/microservices_course/week_3/internal/repository/note/converter"
@@ -23,10 +23,10 @@ const (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
-func NewRepository(db *pgxpool.Pool) repository.NoteRepository {
+func NewRepository(db db.Client) repository.NoteRepository {
 	return &repo{db: db}
 }
 
@@ -42,8 +42,13 @@ func (r *repo) Create(ctx context.Context, info *model.NoteInfo) (int64, error) 
 		return 0, err
 	}
 
+	q := db.Query{
+		Name:     "note_repository.Create",
+		QueryRaw: query,
+	}
+
 	var id int64
-	err = r.db.QueryRow(ctx, query, args...).Scan(&id)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -63,8 +68,13 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.Note, error) {
 		return nil, err
 	}
 
+	q := db.Query{
+		Name:     "note_repository.Get",
+		QueryRaw: query,
+	}
+
 	var note modelRepo.Note
-	err = r.db.QueryRow(ctx, query, args...).Scan(&note.ID, &note.Info.Title, &note.Info.Content, &note.CreatedAt, &note.UpdatedAt)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&note.ID, &note.Info.Title, &note.Info.Content, &note.CreatedAt, &note.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
