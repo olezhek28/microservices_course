@@ -1,28 +1,21 @@
 package converter
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/olezhek28/microservices_course/week_3/internal/repository/note/model"
-	desc "github.com/olezhek28/microservices_course/week_3/pkg/note_v1"
+	"github.com/olezhek28/microservices_course/week_3/internal/model"
+	modelRepo "github.com/olezhek28/microservices_course/week_3/internal/repository/note/model"
 )
 
-func ToNoteFromRepo(note *model.Note) *desc.Note {
-	var updatedAt *timestamppb.Timestamp
-	if note.UpdatedAt.Valid {
-		updatedAt = timestamppb.New(note.UpdatedAt.Time)
-	}
-
-	return &desc.Note{
-		Id:        note.ID,
+func ToNoteFromRepo(note *modelRepo.Note) *model.Note {
+	return &model.Note{
+		ID:        note.ID,
 		Info:      ToNoteInfoFromRepo(note.Info),
-		CreatedAt: timestamppb.New(note.CreatedAt),
-		UpdatedAt: updatedAt,
+		CreatedAt: note.CreatedAt,
+		UpdatedAt: note.UpdatedAt,
 	}
 }
 
-func ToNoteInfoFromRepo(info model.NoteInfo) *desc.NoteInfo {
-	return &desc.NoteInfo{
+func ToNoteInfoFromRepo(info modelRepo.NoteInfo) model.NoteInfo {
+	return model.NoteInfo{
 		Title:   info.Title,
 		Content: info.Content,
 	}

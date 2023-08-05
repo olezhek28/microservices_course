@@ -9,20 +9,22 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/olezhek28/microservices_course/week_3/internal/converter"
+	"github.com/olezhek28/microservices_course/week_3/internal/service"
 	desc "github.com/olezhek28/microservices_course/week_3/pkg/note_v1"
 
 	"github.com/olezhek28/microservices_course/week_3/internal/config"
-	"github.com/olezhek28/microservices_course/week_3/internal/repository"
-	"github.com/olezhek28/microservices_course/week_3/internal/repository/note"
+	noteRepository "github.com/olezhek28/microservices_course/week_3/internal/repository/note"
+	noteService "github.com/olezhek28/microservices_course/week_3/internal/service/note"
 )
 
 type server struct {
 	desc.UnimplementedNoteV1Server
-	noteRepository repository.NoteRepository
+	noteService service.NoteService
 }
 
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	id, err := s.noteRepository.Create(ctx, req.GetInfo())
+	id, err := s.noteService.Create(ctx, converter.ToNoteInfoFromDesc(req.GetInfo()))
 	if err != nil {
 		return nil, err
 	}
@@ -35,15 +37,15 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 }
 
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	noteObj, err := s.noteRepository.Get(ctx, req.GetId())
+	noteObj, err := s.noteService.Get(ctx, req.GetId())
 	if err != nil {
 		return nil, err
 	}
 
-	log.Printf("id: %d, title: %s, body: %s, created_at: %v, updated_at: %v\n", noteObj.Id, noteObj.Info.Title, noteObj.Info.Content, noteObj.CreatedAt, noteObj.UpdatedAt)
+	log.Printf("id: %d, title: %s, body: %s, created_at: %v, updated_at: %v\n", noteObj.ID, noteObj.Info.Title, noteObj.Info.Content, noteObj.CreatedAt, noteObj.UpdatedAt)
 
 	return &desc.GetResponse{
-		Note: noteObj,
+		Note: converter.ToNoteFromService(noteObj),
 	}, nil
 }
 
@@ -78,11 +80,12 @@ func main() {
 	}
 	defer pool.Close()
 
-	noteRepo := note.NewRepository(pool)
+	noteRepo := noteRepository.NewRepository(pool)
+	noteSrv := noteService.NewService(noteRepo)
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterNoteV1Server(s, &server{noteRepository: noteRepo})
+	desc.RegisterNoteV1Server(s, &server{noteService: noteSrv})
 
 	log.Printf("server listening at %v", lis.Addr())
 

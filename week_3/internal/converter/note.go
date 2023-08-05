@@ -3,7 +3,7 @@ package converter
 import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/olezhek28/microservices_course/week_3/internal/repository/note/model"
+	"github.com/olezhek28/microservices_course/week_3/internal/model"
 	desc "github.com/olezhek28/microservices_course/week_3/pkg/note_v1"
 )
 
@@ -23,6 +23,13 @@ func ToNoteFromService(note *model.Note) *desc.Note {
 
 func ToNoteInfoFromService(info model.NoteInfo) *desc.NoteInfo {
 	return &desc.NoteInfo{
+		Title:   info.Title,
+		Content: info.Content,
+	}
+}
+
+func ToNoteInfoFromDesc(info *desc.NoteInfo) *model.NoteInfo {
+	return &model.NoteInfo{
 		Title:   info.Title,
 		Content: info.Content,
 	}
