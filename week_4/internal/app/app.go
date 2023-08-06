@@ -9,7 +9,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/olezhek28/microservices_course/week_4/internal/closer"
+	"github.com/olezhek28/platform_common/pkg/closer"
+
 	"github.com/olezhek28/microservices_course/week_4/internal/config"
 	desc "github.com/olezhek28/microservices_course/week_4/pkg/note_v1"
 )

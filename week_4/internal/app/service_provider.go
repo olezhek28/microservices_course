@@ -99,7 +99,6 @@ func (s *serviceProvider) NoteService(ctx context.Context) service.NoteService {
 	if s.noteService == nil {
 		s.noteService = noteService.NewService(
 			s.NoteRepository(ctx),
-			s.TxManager(ctx),
 		)
 	}
 
