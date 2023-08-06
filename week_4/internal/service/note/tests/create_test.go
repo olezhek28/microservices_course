@@ -16,6 +16,7 @@ import (
 )
 
 func TestCreate(t *testing.T) {
+	t.Parallel()
 	type noteRepositoryMockFunc func(mc *minimock.Controller) repository.NoteRepository
 
 	type args struct {
@@ -80,6 +81,8 @@ func TestCreate(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			noteRepoMock := tt.noteRepositoryMock(mc)
 			service := note.NewMockService(noteRepoMock)
 
