@@ -8,6 +8,7 @@ install-deps:
 	GOBIN=$(LOCAL_BIN) go install github.com/envoyproxy/protoc-gen-validate@v0.10.1
 	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.15.2
 	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.15.2
+	GOBIN=$(LOCAL_BIN) go install github.com/rakyll/statik@v0.1.7
 
 get-deps:
 	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
@@ -16,6 +17,7 @@ get-deps:
 generate:
 	mkdir -p pkg/swagger
 	make generate-note-api
+	$(LOCAL_BIN)/statik -src=pkg/swagger/ -include='*.css,*.html,*.js,*.json,*.png'
 
 generate-note-api:
 	mkdir -p pkg/note_v1
