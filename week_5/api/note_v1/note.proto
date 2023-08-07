@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+package note_v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/olezhek28/microservices_course/week_5/config/pkg/note_v1;note_v1";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Note API"
+    version: "1.0.0"
+    contact: {
+      name: "Oleg Kozyrev"
+      email: "ovkozyrev@avito.ru"
+    };
+  };
+
+  host: "localhost:8080",
+  schemes: HTTP,
+  schemes: HTTPS,
+  consumes: "application/json",
+  produces: "application/json",
+};
+
+service NoteV1 {
+  rpc Create(CreateRequest) returns (CreateResponse){
+    option (google.api.http) = {
+      post: "/note/v1/create"
+      body: "*"
+    };
+  }
+
+  rpc Get(GetRequest) returns (GetResponse){
+    option (google.api.http) = {
+      get: "/note/v1"
+    };
+  }
+
+  rpc List(ListRequest) returns (ListResponse){
+    option (google.api.http) = {
+      get: "/note/v1/list"
+    };
+  }
+
+  rpc Update(UpdateRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      patch: "/note/v1"
+      body: "*"
+    };
+  }
+
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      delete: "/note/v1"
+    };
+  }
+}
+
+message NoteInfo {
+  string title = 1 [(validate.rules).string = {min_len: 1, max_len: 50}];
+  string content = 2;
+}
+
+message Note {
+  int64 id = 1;
+  NoteInfo info = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+message UpdateNoteInfo {
+  google.protobuf.StringValue title = 1;
+  google.protobuf.StringValue context = 2;
+  google.protobuf.StringValue author = 3;
+  google.protobuf.BoolValue is_public = 4;
+}
+
+message CreateRequest {
+  NoteInfo info = 1;
+}
+
+message CreateResponse {
+  int64 id = 1;
+}
+
+message GetRequest {
+  int64 id = 1;
+}
+
+message GetResponse {
+  Note note = 1;
+}
+
+message ListRequest {
+  int64 limit = 1;
+  int64 offset = 2;
+}
+
+message ListResponse {
+  repeated Note notes = 1;
+}
+
+message UpdateRequest {
+  int64 id = 1;
+  UpdateNoteInfo info = 2;
+}
+
+message DeleteRequest {
+  int64 id = 1;
+}
+
+
+
