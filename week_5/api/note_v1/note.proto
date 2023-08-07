@@ -6,15 +6,42 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "validate/validate.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/olezhek28/microservices_course/week_5/config/pkg/note_v1;note_v1";
 
 service NoteV1 {
-  rpc Create(CreateRequest) returns (CreateResponse);
-  rpc Get(GetRequest) returns (GetResponse);
-  rpc List(ListRequest) returns (ListResponse);
-  rpc Update(UpdateRequest) returns (google.protobuf.Empty);
-  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+  rpc Create(CreateRequest) returns (CreateResponse){
+    option (google.api.http) = {
+      post: "/note/v1/create"
+      body: "*"
+    };
+  }
+
+  rpc Get(GetRequest) returns (GetResponse){
+    option (google.api.http) = {
+      get: "/note/v1"
+    };
+  }
+
+  rpc List(ListRequest) returns (ListResponse){
+    option (google.api.http) = {
+      get: "/note/v1/list"
+    };
+  }
+
+  rpc Update(UpdateRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      patch: "/note/v1"
+      body: "*"
+    };
+  }
+
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      delete: "/note/v1"
+    };
+  }
 }
 
 message NoteInfo {
