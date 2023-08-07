@@ -12,6 +12,7 @@ import (
 	"github.com/olezhek28/platform_common/pkg/closer"
 
 	"github.com/olezhek28/microservices_course/week_5/internal/config"
+	"github.com/olezhek28/microservices_course/week_5/internal/interceptor"
 	desc "github.com/olezhek28/microservices_course/week_5/pkg/note_v1"
 )
 
@@ -72,7 +73,10 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	a.grpcServer = grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+	)
 
 	reflection.Register(a.grpcServer)
 
