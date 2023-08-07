@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/envoyproxy/protoc-gen-validate v0.10.1
 	github.com/joho/godotenv v1.5.1
 	github.com/olezhek28/platform_common v0.0.0-20230806081451-573131596244
 	github.com/pkg/errors v0.9.1
