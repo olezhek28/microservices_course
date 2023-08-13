@@ -6,3 +6,6 @@
 /week_3/bin/
 /week_5/bin/
 /week_5/vendor.protogen/
+/week_7/grpc_with_logs/bin/
+/week_7/grpc_with_logs/vendor.protogen/
+/week_7/grpc_with_logs/logs/
