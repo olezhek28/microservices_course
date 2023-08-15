@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
-option go_package = "github.com/olezhek28/microservices_course/week_7/grpc_with_logs/pkg/note_v1;note_v1";
+option go_package = "github.com/olezhek28/microservices_course/week_7/grpc_with_metrics/pkg/note_v1;note_v1";
 
 service NoteV1 {
   rpc Create(CreateRequest) returns (CreateResponse);
