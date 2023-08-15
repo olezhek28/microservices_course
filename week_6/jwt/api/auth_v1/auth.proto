@@ -5,13 +5,22 @@ package auth_v1;
 option go_package = "github.com/olezhek28/microservices_course/week_6/jwt/pkg/auth_v1;auth_v1";
 
 service AuthV1 {
+  rpc Login (LoginRequest) returns (LoginResponse);
   rpc GetRefreshToken (GetRefreshTokenRequest) returns (GetRefreshTokenResponse);
   rpc GetAccessToken (GetAccessTokenRequest) returns (GetAccessTokenResponse);
 }
 
-message GetRefreshTokenRequest {
+message LoginRequest {
   string username = 1;
   string password = 2;
+}
+
+message LoginResponse {
+  string refresh_token = 1;
+}
+
+message GetRefreshTokenRequest {
+  string refresh_token = 1;
 }
 
 message GetRefreshTokenResponse {
