@@ -2,25 +2,36 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
 	"net"
-	"net/http"
+	"os"
 	"time"
 
 	"github.com/brianvoe/gofakeit"
+	"github.com/natefinch/lumberjack"
 	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/olezhek28/microservices_course/week_7/grpc_with_traces/internal/interceptor"
+	"github.com/olezhek28/microservices_course/week_7/grpc_with_traces/internal/logger"
+	"github.com/olezhek28/microservices_course/week_7/grpc_with_traces/internal/tracing"
 	desc "github.com/olezhek28/microservices_course/week_7/grpc_with_traces/pkg/note_v1"
 )
 
-const grpcPort = 50051
+var logLevel = flag.String("l", "info", "log level")
+
+const (
+	grpcPort         = 50051
+	otherServicePort = 50052
+	serviceName      = "test-service"
+)
 
 type server struct {
 	desc.UnimplementedNoteV1Server
@@ -51,6 +62,11 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 }
 
 func main() {
+	flag.Parse()
+
+	logger.Init(getCore(getAtomicLevel()))
+	tracing.Init(logger.Logger(), serviceName)
+
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -58,7 +74,7 @@ func main() {
 
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(
-			interceptor.TracesInterceptor,
+			interceptor.ServerTracingInterceptor,
 		),
 	)
 	reflection.Register(s)
@@ -66,33 +82,42 @@ func main() {
 
 	log.Printf("server listening at %v", lis.Addr())
 
-	go func() {
-		err = runPrometheus()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-
 	if err = s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
 
-func runPrometheus() error {
-	mux := http.NewServeMux()
-	mux.Handle("/metrics", promhttp.Handler())
+func getCore(level zap.AtomicLevel) zapcore.Core {
+	stdout := zapcore.AddSync(os.Stdout)
 
-	prometheusServer := &http.Server{
-		Addr:    "localhost:2112",
-		Handler: mux,
+	file := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   "logs/app.log",
+		MaxSize:    10, // megabytes
+		MaxBackups: 3,
+		MaxAge:     7, // days
+	})
+
+	productionCfg := zap.NewProductionEncoderConfig()
+	productionCfg.TimeKey = "timestamp"
+	productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	developmentCfg := zap.NewDevelopmentEncoderConfig()
+	developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+	consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
+	fileEncoder := zapcore.NewJSONEncoder(productionCfg)
+
+	return zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, stdout, level),
+		zapcore.NewCore(fileEncoder, file, level),
+	)
+}
+
+func getAtomicLevel() zap.AtomicLevel {
+	var level zapcore.Level
+	if err := level.Set(*logLevel); err != nil {
+		log.Fatalf("failed to set log level: %v", err)
 	}
 
-	log.Printf("Prometheus server is running on %s", "localhost:2112")
-
-	err := prometheusServer.ListenAndServe()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return zap.NewAtomicLevelAt(level)
 }

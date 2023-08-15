@@ -18,9 +18,7 @@ service NoteV1 {
 
 message NoteInfo {
   string title = 1;
-  string context = 2;
-  string author = 3;
-  bool is_public = 4;
+  string content = 2;
 }
 
 message Note {
