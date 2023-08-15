@@ -8,8 +8,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-const traceIDKey = "x-trace-id"
-
 func ServerTracingInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, info.FullMethod)
 	defer span.Finish()

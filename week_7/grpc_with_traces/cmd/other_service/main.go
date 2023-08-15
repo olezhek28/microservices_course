@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/brianvoe/gofakeit"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/natefinch/lumberjack"
 	"github.com/opentracing/opentracing-go"
@@ -17,35 +18,30 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/olezhek28/microservices_course/week_7/grpc_with_traces/internal/client/rpc"
-	otherService "github.com/olezhek28/microservices_course/week_7/grpc_with_traces/internal/client/rpc/other_service"
-	"github.com/olezhek28/microservices_course/week_7/grpc_with_traces/internal/interceptor"
 	"github.com/olezhek28/microservices_course/week_7/grpc_with_traces/internal/logger"
 	"github.com/olezhek28/microservices_course/week_7/grpc_with_traces/internal/tracing"
-	desc "github.com/olezhek28/microservices_course/week_7/grpc_with_traces/pkg/note_v1"
-	descOther "github.com/olezhek28/microservices_course/week_7/grpc_with_traces/pkg/other_note_v1"
+	desc "github.com/olezhek28/microservices_course/week_7/grpc_with_traces/pkg/other_note_v1"
 )
 
 var logLevel = flag.String("l", "info", "log level")
 
 const (
-	grpcPort         = 50051
-	otherServicePort = 50052
-	serviceName      = "test-service"
+	grpcPort    = 50052
+	serviceName = "other-service"
 )
 
 type server struct {
-	desc.UnimplementedNoteV1Server
-
-	otherServiceClient rpc.OtherServiceClient
+	desc.UnimplementedOtherNoteV1Server
 }
 
 // Get ...
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
+	// Можно раскомментировать, чтобы увидеть, как работает tracing с ошибками
+	// return nil, errors.Errorf("not implemented")
+
 	if req.GetId() == 0 {
 		return nil, errors.Errorf("id is empty")
 	}
@@ -53,30 +49,15 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 	// rand.Intn(max - min) + min
 	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "get note")
-	defer span.Finish()
-
-	span.SetTag("id", req.GetId())
-
-	note, err := s.otherServiceClient.Get(ctx, req.GetId())
-	if err != nil {
-		return nil, errors.WithMessage(err, "getting note")
-	}
-
-	var updatedAt *timestamppb.Timestamp
-	if note.UpdatedAt.Valid {
-		updatedAt = timestamppb.New(note.UpdatedAt.Time)
-	}
-
 	return &desc.GetResponse{
 		Note: &desc.Note{
-			Id: note.ID,
+			Id: req.GetId(),
 			Info: &desc.NoteInfo{
-				Title:   note.Info.Title,
-				Content: note.Info.Content,
+				Title:   gofakeit.BeerName(),
+				Content: gofakeit.IPv4Address(),
 			},
-			CreatedAt: timestamppb.New(note.CreatedAt),
-			UpdatedAt: updatedAt,
+			CreatedAt: timestamppb.New(gofakeit.Date()),
+			UpdatedAt: timestamppb.New(gofakeit.Date()),
 		},
 	}, nil
 }
@@ -87,29 +68,16 @@ func main() {
 	logger.Init(getCore(getAtomicLevel()))
 	tracing.Init(logger.Logger(), serviceName)
 
-	conn, err := grpc.Dial(
-		fmt.Sprintf(":%d", otherServicePort),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())),
-	)
-	if err != nil {
-		log.Fatalf("failed to dial GRPC client: %v", err)
-	}
-
-	otherServiceClient := otherService.New(descOther.NewOtherNoteV1Client(conn))
-
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
 	s := grpc.NewServer(
-		grpc.UnaryInterceptor(
-			interceptor.ServerTracingInterceptor,
-		),
+		grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer())),
 	)
 	reflection.Register(s)
-	desc.RegisterNoteV1Server(s, &server{otherServiceClient: otherServiceClient})
+	desc.RegisterOtherNoteV1Server(s, &server{})
 
 	log.Printf("server listening at %v", lis.Addr())
 
