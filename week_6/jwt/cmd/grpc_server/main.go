@@ -156,7 +156,7 @@ func (s *serverAccess) accessibleRoles(ctx context.Context) (map[string]string, 
 		// Можно кэшировать данные, чтобы не лезть в базу каждый раз
 
 		// Например, для эндпоинта /note_v1.NoteV1/Get доступна только роль admin
-		accessibleRoles["/note_v1.NoteV1/Get"] = "admin"
+		accessibleRoles[model.ExamplePath] = "admin"
 	}
 
 	return accessibleRoles, nil
