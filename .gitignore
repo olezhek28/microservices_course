@@ -10,3 +10,4 @@
 /week_7/grpc_with_logs/vendor.protogen/
 /week_7/grpc_with_logs/logs/
 /week_7/grpc_with_metrics/bin/
+/week_7/grpc_with_traces/bin/
