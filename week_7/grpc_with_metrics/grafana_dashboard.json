@@ -25,7 +25,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "c8d848a6-30ee-45c2-b30e-526f7e79e104"
+        "uid": "bf865d35-2eb7-4209-91c4-5ecea9095e44"
       },
       "fieldConfig": {
         "defaults": {
@@ -103,7 +103,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c8d848a6-30ee-45c2-b30e-526f7e79e104"
+            "uid": "bf865d35-2eb7-4209-91c4-5ecea9095e44"
           },
           "editorMode": "code",
           "expr": "rate(my_space_grpc_my_app_requests_total[5s])",
@@ -119,7 +119,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "c8d848a6-30ee-45c2-b30e-526f7e79e104"
+        "uid": "bf865d35-2eb7-4209-91c4-5ecea9095e44"
       },
       "fieldConfig": {
         "defaults": {
@@ -228,7 +228,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c8d848a6-30ee-45c2-b30e-526f7e79e104"
+            "uid": "bf865d35-2eb7-4209-91c4-5ecea9095e44"
           },
           "editorMode": "code",
           "expr": "rate(my_space_grpc_my_app_responses_total[10s])",
@@ -244,7 +244,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "c8d848a6-30ee-45c2-b30e-526f7e79e104"
+        "uid": "bf865d35-2eb7-4209-91c4-5ecea9095e44"
       },
       "fieldConfig": {
         "defaults": {
@@ -295,7 +295,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "s"
         },
         "overrides": [
           {
@@ -353,7 +353,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c8d848a6-30ee-45c2-b30e-526f7e79e104"
+            "uid": "bf865d35-2eb7-4209-91c4-5ecea9095e44"
           },
           "editorMode": "code",
           "expr": "histogram_quantile(0.9,\n    sum(rate(my_space_grpc_my_app_histogram_response_time_seconds_bucket[10s])) by (le, status)\n)",
@@ -365,7 +365,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c8d848a6-30ee-45c2-b30e-526f7e79e104"
+            "uid": "bf865d35-2eb7-4209-91c4-5ecea9095e44"
           },
           "editorMode": "code",
           "expr": "histogram_quantile(0.5,\n    sum(rate(my_space_grpc_my_app_histogram_response_time_seconds_bucket[10s])) by (le, status)\n)",
@@ -395,6 +395,6 @@
   "timezone": "",
   "title": "Service overview",
   "uid": "b6b656b1-d42c-454d-b033-a0be8019db6f",
-  "version": 6,
+  "version": 2,
   "weekStart": ""
 }
