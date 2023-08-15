@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package auth_v1;
+
+option go_package = "github.com/olezhek28/microservices_course/week_6/jwt/pkg/auth_v1;auth_v1";
+
+service AuthV1 {
+  rpc GetRefreshToken (GetRefreshTokenRequest) returns (GetRefreshTokenResponse);
+  rpc GetAccessToken (GetAccessTokenRequest) returns (GetAccessTokenResponse);
+}
+
+message GetRefreshTokenRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message GetRefreshTokenResponse {
+  string refresh_token = 1;
+}
+
+message GetAccessTokenRequest {
+  string refresh_token = 1;
+}
+
+message GetAccessTokenResponse {
+  string access_token = 1;
+}
