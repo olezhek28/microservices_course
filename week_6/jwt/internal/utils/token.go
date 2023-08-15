@@ -9,12 +9,13 @@ import (
 	"github.com/olezhek28/microservices_course/week_6/jwt/internal/model"
 )
 
-func GenerateToken(username string, secretKey []byte, duration time.Duration) (string, error) {
+func GenerateToken(info model.UserInfo, secretKey []byte, duration time.Duration) (string, error) {
 	claims := model.UserClaims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
 		},
-		Username: username,
+		Username: info.Username,
+		Role:     info.Role,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
