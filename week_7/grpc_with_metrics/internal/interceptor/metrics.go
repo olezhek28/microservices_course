@@ -11,5 +11,12 @@ import (
 func MetricsInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	metric.IncRequestCounter()
 
-	return handler(ctx, req)
+	res, err := handler(ctx, req)
+	if err != nil {
+		metric.IncResponseCounter("error", info.FullMethod)
+	} else {
+		metric.IncResponseCounter("success", info.FullMethod)
+	}
+
+	return res, err
 }
