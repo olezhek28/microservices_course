@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/olezhek28/microservices_course/week_8/custom_errors/internal/interceptor"
 	desc "github.com/olezhek28/microservices_course/week_8/custom_errors/pkg/note_v1"
 )
 
@@ -51,7 +52,9 @@ func main() {
 
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(
-			grpcMiddleware.ChainUnaryServer(),
+			grpcMiddleware.ChainUnaryServer(
+				interceptor.ErrorCodesInterceptor,
+			),
 		),
 	)
 	reflection.Register(s)
