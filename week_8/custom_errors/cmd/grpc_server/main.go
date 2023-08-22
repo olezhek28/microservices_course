@@ -8,7 +8,9 @@ import (
 
 	"github.com/brianvoe/gofakeit"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/pkg/errors"
+	"github.com/olezhek28/platform_common/pkg/sys"
+	"github.com/olezhek28/platform_common/pkg/sys/codes"
+	"github.com/olezhek28/platform_common/pkg/sys/validate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -25,8 +27,17 @@ type server struct {
 
 // Get ...
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	if req.GetId() == 0 {
-		return nil, errors.Errorf("id is empty")
+	err := validate.Validate(
+		ctx,
+		validateID(req.GetId()),
+		otherValidateID(req.GetId()),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.GetId() > 100 {
+		return nil, sys.NewCommonError("id must be less than 100", codes.ResourceExhausted)
 	}
 
 	return &desc.GetResponse{
@@ -42,6 +53,26 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 			UpdatedAt: timestamppb.New(gofakeit.Date()),
 		},
 	}, nil
+}
+
+func validateID(id int64) validate.Condition {
+	return func(ctx context.Context) error {
+		if id <= 0 {
+			return validate.NewValidationErrors("id must be greater than 0")
+		}
+
+		return nil
+	}
+}
+
+func otherValidateID(id int64) validate.Condition {
+	return func(ctx context.Context) error {
+		if id <= 100 {
+			return validate.NewValidationErrors("id must be greater than 100")
+		}
+
+		return nil
+	}
 }
 
 func main() {
