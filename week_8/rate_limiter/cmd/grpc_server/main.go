@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"github.com/brianvoe/gofakeit"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/olezhek28/microservices_course/week_8/rate_limiter/internal/interceptor"
+	"github.com/olezhek28/microservices_course/week_8/rate_limiter/internal/rate_limiter"
 	desc "github.com/olezhek28/microservices_course/week_8/rate_limiter/pkg/note_v1"
 )
 
@@ -40,12 +44,22 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 }
 
 func main() {
+	ctx := context.Background()
+
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer()
+	rateLimiter := rate_limiter.NewTokenBucketLimiter(ctx, 10, time.Second)
+
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(
+			grpcMiddleware.ChainUnaryServer(
+				interceptor.NewRateLimiterInterceptor(rateLimiter).Unary,
+			),
+		),
+	)
 	reflection.Register(s)
 	desc.RegisterNoteV1Server(s, &server{})
 

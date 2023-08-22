@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	grpcRetry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 
 	desc "github.com/olezhek28/microservices_course/week_8/rate_limiter/pkg/note_v1"
@@ -35,4 +37,16 @@ func main() {
 	}
 
 	log.Printf(color.RedString("Note info:\n"), color.GreenString("%+v", r.GetNote()))
+}
+
+func clientOpt() {
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithUnaryInterceptor(grpcRetry.UnaryClientInterceptor(
+		grpcRetry.WithCodes(codes.Unavailable, codes.ResourceExhausted),
+		grpcRetry.WithMax(5),
+		grpcRetry.WithBackoff(grpcRetry.BackoffLinear(time.Second)),
+	)))
+	opts = append(opts, grpc.WithInsecure())
+
+	grpc.DialContext(context.Background(), "localhost:8080", opts...)
 }
