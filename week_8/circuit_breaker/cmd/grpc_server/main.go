@@ -6,11 +6,13 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/brianvoe/gofakeit"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sony/gobreaker"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -31,8 +33,6 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 	if req.GetId() == 0 {
 		return nil, errors.Errorf("id is empty")
 	}
-
-	log.Printf("Note id: %d", req.GetId())
 
 	return &desc.GetResponse{
 		Note: &desc.Note{
@@ -61,9 +61,23 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	cb := gobreaker.NewCircuitBreaker(gobreaker.Settings{
+		Name:        "my-service",
+		MaxRequests: 3,
+		Timeout:     5 * time.Second,
+		ReadyToTrip: func(counts gobreaker.Counts) bool {
+			failureRatio := float64(counts.TotalFailures) / float64(counts.Requests)
+			return failureRatio >= 0.6
+		},
+		OnStateChange: func(name string, from gobreaker.State, to gobreaker.State) {
+			log.Printf("Circuit Breaker: %s, changed from %v, to %v\n", name, from, to)
+		},
+	})
+
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(
 			grpcMiddleware.ChainUnaryServer(
+				interceptor.NewCircuitBreakerInterceptor(cb).Unary,
 				interceptor.MetricsInterceptor,
 			),
 		),
