@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package chat_v1;
+
+option go_package = "github.com/olezhek28/microservices_course/week_8/chat/pkg/chat_v1;chat_v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service ChatV1 {
+  rpc CreateChat(CreateChatRequest) returns (CreateChatResponse);
+  rpc ConnectChat (ConnectChatRequest) returns (stream Message);
+  rpc SendMessage (SendMessageRequest) returns (google.protobuf.Empty);
+}
+
+message Message {
+  string from = 1;
+  string text = 2;
+  google.protobuf.Timestamp created_at = 3;
+}
+
+message CreateChatRequest {
+  repeated string usernames = 1;
+}
+
+message CreateChatResponse {
+  string chat_id = 1;
+}
+
+message ConnectChatRequest {
+  string chat_id = 1;
+  string username = 2;
+}
+
+message SendMessageRequest {
+  string chat_id = 1;
+  Message message = 2;
+}
