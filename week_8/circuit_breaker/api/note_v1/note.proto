@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package note_v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "github.com/olezhek28/microservices_course/week_8/circuit_breaker/pkg/note_v1;note_v1";
+
+service NoteV1 {
+  rpc Create(CreateRequest) returns (CreateResponse);
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc List(ListRequest) returns (ListResponse);
+  rpc Update(UpdateRequest) returns (google.protobuf.Empty);
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+}
+
+message NoteInfo {
+  string title = 1;
+  string context = 2;
+  string author = 3;
+  bool is_public = 4;
+}
+
+message Note {
+  int64 id = 1;
+  NoteInfo info = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+message UpdateNoteInfo {
+  google.protobuf.StringValue title = 1;
+  google.protobuf.StringValue context = 2;
+  google.protobuf.StringValue author = 3;
+  google.protobuf.BoolValue is_public = 4;
+}
+
+message CreateRequest {
+  NoteInfo info = 1;
+}
+
+message CreateResponse {
+  int64 id = 1;
+}
+
+message GetRequest {
+  int64 id = 1;
+}
+
+message GetResponse {
+  Note note = 1;
+}
+
+message ListRequest {
+  int64 limit = 1;
+  int64 offset = 2;
+}
+
+message ListResponse {
+  repeated Note notes = 1;
+}
+
+message UpdateRequest {
+  int64 id = 1;
+  UpdateNoteInfo info = 2;
+}
+
+message DeleteRequest {
+  int64 id = 1;
+}
+
+
+
