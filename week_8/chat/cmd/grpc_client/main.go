@@ -33,7 +33,7 @@ func main() {
 	client := desc.NewChatV1Client(conn)
 
 	// Создаем новый чат на сервере
-	chatID, err := createChat(ctx, client, []string{"oleg", "ivan"})
+	chatID, err := createChat(ctx, client)
 	if err != nil {
 		log.Fatalf("failed to create chat: %v", err)
 	}
@@ -47,7 +47,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 
-		err = connectChat(ctx, client, chatID, "oleg")
+		err = connectChat(ctx, client, chatID, "oleg", 5*time.Second)
 		if err != nil {
 			log.Fatalf("failed to connect chat: %v", err)
 		}
@@ -57,7 +57,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 
-		err = connectChat(ctx, client, chatID, "ivan")
+		err = connectChat(ctx, client, chatID, "ivan", 7*time.Second)
 		if err != nil {
 			log.Fatalf("failed to connect chat: %v", err)
 		}
@@ -66,7 +66,7 @@ func main() {
 	wg.Wait()
 }
 
-func connectChat(ctx context.Context, client desc.ChatV1Client, chatID string, username string) error {
+func connectChat(ctx context.Context, client desc.ChatV1Client, chatID string, username string, period time.Duration) error {
 	stream, err := client.ConnectChat(ctx, &desc.ConnectChatRequest{
 		ChatId:   chatID,
 		Username: username,
@@ -116,7 +116,7 @@ func connectChat(ctx context.Context, client desc.ChatV1Client, chatID string, u
 		//	log.Println("failed to scan message: ", err)
 		//}
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(period)
 
 		text := gofakeit.Word()
 
@@ -135,7 +135,7 @@ func connectChat(ctx context.Context, client desc.ChatV1Client, chatID string, u
 	}
 }
 
-func createChat(ctx context.Context, client desc.ChatV1Client, usernames []string) (string, error) {
+func createChat(ctx context.Context, client desc.ChatV1Client) (string, error) {
 	res, err := client.CreateChat(ctx, &emptypb.Empty{})
 	if err != nil {
 		return "", err
