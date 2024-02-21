@@ -25,10 +25,10 @@ build:
 	GOOS=linux GOARCH=amd64 go build -o service_linux cmd/grpc_server/main.go
 
 copy-to-server:
-	scp service_linux root@45.12.231.86:
+	scp service_linux root@46.148.238.243:
 
 docker-build-and-push:
-	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/olezhek28/test-server:v0.0.1 .
-	docker login -u token -p CRgAAAAA6ELvdoGnA7EL4qSbkICKeDkVldDC2OOU cr.selcloud.ru/olezhek28
-	docker push cr.selcloud.ru/olezhek28/test-server:v0.0.1
+	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/darkus13/test-server:v0.0.1 .
+	docker login -u token -p CRgAAAAALP-3QTYqfxrajakCx72mHn3wxEbW5n3g cr.selcloud.ru/darkus13
+	docker push cr.selcloud.ru/darkus13/test-server:v0.0.1
 

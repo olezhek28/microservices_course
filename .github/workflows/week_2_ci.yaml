@@ -7,7 +7,7 @@ on:
     branches: [ main, master ]
 
 env:
-  REGISTRY: "cr.selcloud.ru/olezhek28"
+  REGISTRY: "cr.selcloud.ru/darkus13"
   IMAGE_NAME: "crud-server"
   CONTAINER_NAME: "crud-server-container"
 
