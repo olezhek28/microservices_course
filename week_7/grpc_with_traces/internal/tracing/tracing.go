@@ -11,6 +11,9 @@ func Init(logger *zap.Logger, serviceName string) {
 			Type:  "const",
 			Param: 1,
 		},
+		Reporter: &config.ReporterConfig{
+			LocalAgentHostPort: "localhost:6831",
+		},
 	}
 
 	_, err := cfg.InitGlobalTracer(serviceName)
