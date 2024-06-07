@@ -12,9 +12,9 @@ import (
 const (
 	redisHostEnvName              = "REDIS_HOST"
 	redisPortEnvName              = "REDIS_PORT"
-	redisConnectionTimeoutEnvName = "REDIS_CONNECTION_TIMEOUT"
+	redisConnectionTimeoutEnvName = "REDIS_CONNECTION_TIMEOUT_SEC"
 	redisMaxIdleEnvName           = "REDIS_MAX_IDLE"
-	redisIdleTimeoutEnvName       = "REDIS_IDLE_TIMEOUT"
+	redisIdleTimeoutEnvName       = "REDIS_IDLE_TIMEOUT_SEC"
 )
 
 type redisConfig struct {
@@ -63,7 +63,7 @@ func NewRedisConfig() (*redisConfig, error) {
 		return nil, errors.New("redis idle timeout not found")
 	}
 
-	idleTimeout, err := time.ParseDuration(idleTimeoutStr)
+	idleTimeout, err := strconv.ParseInt(idleTimeoutStr, 10, 64)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse idle timeout")
 	}
@@ -71,9 +71,9 @@ func NewRedisConfig() (*redisConfig, error) {
 	return &redisConfig{
 		host:              host,
 		port:              port,
-		connectionTimeout: time.Duration(connectionTimeout),
+		connectionTimeout: time.Duration(connectionTimeout) * time.Second,
 		maxIdle:           maxIdle,
-		idleTimeout:       idleTimeout,
+		idleTimeout:       time.Duration(idleTimeout) * time.Second,
 	}, nil
 }
 

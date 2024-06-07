@@ -7,12 +7,8 @@ import (
 
 type Note struct {
 	ID        int64
-	Info      NoteInfo
+	Title     string
+	Content   string
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
-}
-
-type NoteInfo struct {
-	Title   string
-	Content string
 }

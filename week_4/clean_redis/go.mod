@@ -4,7 +4,6 @@ go 1.22.4
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/gojuno/minimock/v3 v3.3.11
 	github.com/gomodule/redigo v1.9.2
 	github.com/joho/godotenv v1.5.1
 	github.com/olezhek28/platform_common v0.0.0-20230822195735-04af626dd264
@@ -14,7 +13,6 @@ require (
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/georgysavva/scany v1.2.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -28,7 +26,6 @@ require (
 	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect

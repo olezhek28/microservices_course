@@ -16,15 +16,17 @@ import (
 	"github.com/olezhek28/microservices_course/week_4/clean_redis/internal/config"
 	"github.com/olezhek28/microservices_course/week_4/clean_redis/internal/config/env"
 	"github.com/olezhek28/microservices_course/week_4/clean_redis/internal/repository"
-	noteRepository "github.com/olezhek28/microservices_course/week_4/clean_redis/internal/repository/note"
+	noteRepositoryPg "github.com/olezhek28/microservices_course/week_4/clean_redis/internal/repository/note/pg"
+	noteRepositoryRedis "github.com/olezhek28/microservices_course/week_4/clean_redis/internal/repository/note/redis"
 	"github.com/olezhek28/microservices_course/week_4/clean_redis/internal/service"
 	noteService "github.com/olezhek28/microservices_course/week_4/clean_redis/internal/service/note"
 )
 
 type serviceProvider struct {
-	pgConfig    config.PGConfig
-	grpcConfig  config.GRPCConfig
-	redisConfig config.RedisConfig
+	pgConfig      config.PGConfig
+	grpcConfig    config.GRPCConfig
+	redisConfig   config.RedisConfig
+	storageConfig config.StorageConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -82,6 +84,19 @@ func (s *serviceProvider) RedisConfig() config.RedisConfig {
 	return s.redisConfig
 }
 
+func (s *serviceProvider) StorageConfig() config.StorageConfig {
+	if s.storageConfig == nil {
+		cfg, err := env.NewStorageConfig()
+		if err != nil {
+			log.Fatalf("failed to get storage config: %s", err.Error())
+		}
+
+		s.storageConfig = cfg
+	}
+
+	return s.storageConfig
+}
+
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
 		cl, err := pg.New(ctx, s.PGConfig().DSN())
@@ -133,7 +148,12 @@ func (s *serviceProvider) RedisClient() cache.RedisClient {
 
 func (s *serviceProvider) NoteRepository(ctx context.Context) repository.NoteRepository {
 	if s.noteRepository == nil {
-		s.noteRepository = noteRepository.NewRepository(s.DBClient(ctx))
+		if s.StorageConfig().Mode() == "redis" {
+			s.noteRepository = noteRepositoryRedis.NewRepository(s.RedisClient())
+		}
+		if s.StorageConfig().Mode() == "pg" {
+			s.noteRepository = noteRepositoryPg.NewRepository(s.DBClient(ctx))
+		}
 	}
 
 	return s.noteRepository

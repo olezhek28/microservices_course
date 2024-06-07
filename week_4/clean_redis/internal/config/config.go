@@ -21,6 +21,10 @@ type RedisConfig interface {
 	IdleTimeout() time.Duration
 }
 
+type StorageConfig interface {
+	Mode() string
+}
+
 func Load(path string) error {
 	err := godotenv.Load(path)
 	if err != nil {

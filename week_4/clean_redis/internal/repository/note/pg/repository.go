@@ -1,15 +1,17 @@
-package note
+package pg
 
 import (
 	"context"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v4"
 	"github.com/olezhek28/platform_common/pkg/db"
+	"github.com/pkg/errors"
 
 	"github.com/olezhek28/microservices_course/week_4/clean_redis/internal/model"
 	"github.com/olezhek28/microservices_course/week_4/clean_redis/internal/repository"
-	"github.com/olezhek28/microservices_course/week_4/clean_redis/internal/repository/note/converter"
-	modelRepo "github.com/olezhek28/microservices_course/week_4/clean_redis/internal/repository/note/model"
+	"github.com/olezhek28/microservices_course/week_4/clean_redis/internal/repository/note/pg/converter"
+	modelRepo "github.com/olezhek28/microservices_course/week_4/clean_redis/internal/repository/note/pg/model"
 )
 
 const (
@@ -74,8 +76,12 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.Note, error) {
 	}
 
 	var note modelRepo.Note
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&note.ID, &note.Info.Title, &note.Info.Content, &note.CreatedAt, &note.UpdatedAt)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&note.ID, &note.Title, &note.Content, &note.CreatedAt, &note.UpdatedAt)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, model.ErrorNoteNotFound
+		}
+
 		return nil, err
 	}
 
