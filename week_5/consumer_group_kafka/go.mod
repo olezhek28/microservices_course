@@ -1,4 +1,4 @@
-module github.com/olezhek28/microservices_course/week_5/easy_kafka
+module github.com/olezhek28/microservices_course/week_5/consumer_group_kafka
 
 go 1.22.4
 
