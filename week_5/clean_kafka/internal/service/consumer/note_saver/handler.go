@@ -10,7 +10,7 @@ import (
 	"github.com/olezhek28/microservices_course/week_5/clean_kafka/internal/model"
 )
 
-func (s *service) UserRegistrationHandler(ctx context.Context, msg *sarama.ConsumerMessage) error {
+func (s *service) NoteSaveHandler(ctx context.Context, msg *sarama.ConsumerMessage) error {
 	noteInfo := &model.NoteInfo{}
 	err := json.Unmarshal(msg.Value, noteInfo)
 	if err != nil {
