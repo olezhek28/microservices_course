@@ -1,4 +1,8 @@
 version: '3.8'
+
+volumes:
+  postgres_volume:
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
@@ -71,3 +75,12 @@ services:
       - "8082:8080" # порт для клиентских соединений Kafka UI
     environment:
       DYNAMIC_CONFIG_ENABLED: true
+
+  pg:
+    image: postgres:14-alpine3.17
+    env_file:
+      - .env
+    ports:
+      - "54321:5432"
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data

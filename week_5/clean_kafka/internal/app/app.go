@@ -3,20 +3,18 @@ package app
 import (
 	"context"
 	"log"
-	"net"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/olezhek28/platform_common/pkg/closer"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/reflection"
 
 	"github.com/olezhek28/microservices_course/week_5/clean_kafka/internal/config"
-	desc "github.com/olezhek28/microservices_course/week_5/clean_kafka/pkg/note_v1"
 )
 
 type App struct {
 	serviceProvider *serviceProvider
-	grpcServer      *grpc.Server
 }
 
 func NewApp(ctx context.Context) (*App, error) {
@@ -30,20 +28,33 @@ func NewApp(ctx context.Context) (*App, error) {
 	return a, nil
 }
 
-func (a *App) Run() error {
+func (a *App) Run(ctx context.Context) error {
 	defer func() {
 		closer.CloseAll()
 		closer.Wait()
 	}()
 
-	return a.runGRPCServer()
+	ctx, cancel := context.WithCancel(ctx)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+
+	go func() {
+		defer wg.Done()
+		err := a.serviceProvider.NoteSaverConsumer(ctx).RunConsumer(ctx)
+		if err != nil {
+			log.Printf("failed to run consumer: %s", err.Error())
+		}
+	}()
+
+	gracefulShutdown(ctx, cancel, wg)
+	return nil
 }
 
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initConfig,
 		a.initServiceProvider,
-		a.initGRPCServer,
 	}
 
 	for _, f := range inits {
@@ -70,28 +81,22 @@ func (a *App) initServiceProvider(_ context.Context) error {
 	return nil
 }
 
-func (a *App) initGRPCServer(ctx context.Context) error {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+func gracefulShutdown(ctx context.Context, cancel context.CancelFunc, wg *sync.WaitGroup) {
+	select {
+	case <-ctx.Done():
+		log.Println("terminating: context cancelled")
+	case <-waitSignal():
+		log.Println("terminating: via signal")
+	}
 
-	reflection.Register(a.grpcServer)
-
-	desc.RegisterNoteV1Server(a.grpcServer, a.serviceProvider.NoteImpl(ctx))
-
-	return nil
+	cancel()
+	if wg != nil {
+		wg.Wait()
+	}
 }
 
-func (a *App) runGRPCServer() error {
-	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCConfig().Address())
-
-	list, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
-	if err != nil {
-		return err
-	}
-
-	err = a.grpcServer.Serve(list)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func waitSignal() chan os.Signal {
+	sigterm := make(chan os.Signal, 1)
+	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
+	return sigterm
 }

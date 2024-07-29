@@ -4,7 +4,7 @@ go 1.22.4
 
 require (
 	github.com/IBM/sarama v1.43.2
-	github.com/brianvoe/gofakeit v3.18.0+incompatible
+	github.com/brianvoe/gofakeit/v6 v6.28.0
 )
 
 require (

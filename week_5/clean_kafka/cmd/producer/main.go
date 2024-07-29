@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"strings"
 
 	"github.com/IBM/sarama"
 	"github.com/brianvoe/gofakeit/v6"
+
+	"github.com/olezhek28/microservices_course/week_5/clean_kafka/internal/model"
 )
 
 const (
@@ -25,9 +28,19 @@ func main() {
 		}
 	}()
 
+	info := model.NoteInfo{
+		Title:   gofakeit.BookTitle(),
+		Content: gofakeit.Paragraph(3, 7, 5, " "),
+	}
+
+	data, err := json.Marshal(info)
+	if err != nil {
+		log.Fatalf("failed to marshal data: %v\n", err.Error())
+	}
+
 	msg := &sarama.ProducerMessage{
 		Topic: topicName,
-		Value: sarama.StringEncoder(gofakeit.StreetName()),
+		Value: sarama.StringEncoder(data),
 	}
 
 	partition, offset, err := producer.SendMessage(msg)

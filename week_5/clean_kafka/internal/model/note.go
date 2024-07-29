@@ -6,13 +6,13 @@ import (
 )
 
 type Note struct {
-	ID        int64
-	Info      NoteInfo
-	CreatedAt time.Time
-	UpdatedAt sql.NullTime
+	ID        int64        `json:"id"`
+	Info      NoteInfo     `json:"info"`
+	CreatedAt time.Time    `json:"created_at"`
+	UpdatedAt sql.NullTime `json:"updated_at"`
 }
 
 type NoteInfo struct {
-	Title   string
-	Content string
+	Title   string `json:"title"`
+	Content string `json:"content"`
 }
