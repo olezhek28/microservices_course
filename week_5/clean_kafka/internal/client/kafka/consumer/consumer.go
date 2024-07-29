@@ -10,7 +10,6 @@ import (
 )
 
 type consumer struct {
-	topicName            string
 	consumerGroup        sarama.ConsumerGroup
 	consumerGroupHandler *GroupHandler
 }
@@ -25,20 +24,19 @@ func NewConsumer(
 	}
 }
 
-func (c *consumer) Consume(ctx context.Context, topicName string, handler Handler) (err error) {
-	c.topicName = topicName
+func (c *consumer) Consume(ctx context.Context, topicName string, handler Handler) error {
 	c.consumerGroupHandler.msgHandler = handler
 
-	return c.consume(ctx)
+	return c.consume(ctx, topicName)
 }
 
 func (c *consumer) Close() error {
 	return c.consumerGroup.Close()
 }
 
-func (c *consumer) consume(ctx context.Context) error {
+func (c *consumer) consume(ctx context.Context, topicName string) error {
 	for {
-		err := c.consumerGroup.Consume(ctx, strings.Split(c.topicName, ","), c.consumerGroupHandler)
+		err := c.consumerGroup.Consume(ctx, strings.Split(topicName, ","), c.consumerGroupHandler)
 		if err != nil {
 			if errors.Is(err, sarama.ErrClosedConsumerGroup) {
 				return nil

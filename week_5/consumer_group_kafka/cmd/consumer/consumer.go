@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/IBM/sarama"
@@ -14,11 +15,13 @@ type Consumer struct {
 func (c *Consumer) Setup(sarama.ConsumerGroupSession) error {
 	// Помечаем консьюмер как готовый к работе
 	close(c.ready)
+	fmt.Println("Consumer ready")
 	return nil
 }
 
 // Cleanup запускается в конце жизни сессии is run at the end of a session после того как все горутины ConsumeClaim завершаться
 func (c *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
+	fmt.Println("Consumer cleanup")
 	return nil
 }
 
