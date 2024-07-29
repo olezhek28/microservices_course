@@ -12,12 +12,12 @@ import (
 type consumer struct {
 	topicName            string
 	consumerGroup        sarama.ConsumerGroup
-	consumerGroupHandler *ConsumerGroupHandler
+	consumerGroupHandler *GroupHandler
 }
 
 func NewConsumer(
 	consumerGroup sarama.ConsumerGroup,
-	consumerGroupHandler *ConsumerGroupHandler,
+	consumerGroupHandler *GroupHandler,
 ) *consumer {
 	return &consumer{
 		consumerGroup:        consumerGroup,

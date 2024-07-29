@@ -31,7 +31,7 @@ type serviceProvider struct {
 
 	consumer             kafka.Consumer
 	consumerGroup        sarama.ConsumerGroup
-	consumerGroupHandler *kafkaConsumer.ConsumerGroupHandler
+	consumerGroupHandler *kafkaConsumer.GroupHandler
 }
 
 func newServiceProvider() *serviceProvider {
@@ -131,9 +131,9 @@ func (s *serviceProvider) ConsumerGroup() sarama.ConsumerGroup {
 	return s.consumerGroup
 }
 
-func (s *serviceProvider) ConsumerGroupHandler() *kafkaConsumer.ConsumerGroupHandler {
+func (s *serviceProvider) ConsumerGroupHandler() *kafkaConsumer.GroupHandler {
 	if s.consumerGroupHandler == nil {
-		s.consumerGroupHandler = kafkaConsumer.NewConsumerGroupHandler()
+		s.consumerGroupHandler = kafkaConsumer.NewGroupHandler()
 	}
 
 	return s.consumerGroupHandler

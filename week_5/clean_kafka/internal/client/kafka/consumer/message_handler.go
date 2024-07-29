@@ -9,27 +9,27 @@ import (
 
 type Handler func(ctx context.Context, msg *sarama.ConsumerMessage) error
 
-type ConsumerGroupHandler struct {
+type GroupHandler struct {
 	msgHandler Handler
 }
 
-func NewConsumerGroupHandler() *ConsumerGroupHandler {
-	return &ConsumerGroupHandler{}
+func NewGroupHandler() *GroupHandler {
+	return &GroupHandler{}
 }
 
 // Setup запускается в начале новой сессии до вызова ConsumeClaim
-func (c *ConsumerGroupHandler) Setup(sarama.ConsumerGroupSession) error {
+func (c *GroupHandler) Setup(sarama.ConsumerGroupSession) error {
 	return nil
 }
 
 // Cleanup запускается в конце жизни сессии после того как все горутины ConsumeClaim завершаться
-func (c *ConsumerGroupHandler) Cleanup(sarama.ConsumerGroupSession) error {
+func (c *GroupHandler) Cleanup(sarama.ConsumerGroupSession) error {
 	return nil
 }
 
 // ConsumeClaim должен запустить потребительский цикл сообщений ConsumerGroupClaim().
 // После закрытия канала Messages() обработчик должен завершить обработку
-func (c *ConsumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+func (c *GroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	// Код ниже не стоит перемещать в горутину, так как ConsumeClaim
 	// уже запускается в горутине, см.:
 	// https://github.com/IBM/sarama/blob/main/consumer_group.go#L869
@@ -55,6 +55,7 @@ func (c *ConsumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession,
 		// В противном случае возникнет `ErrRebalanceInProgress` или `read tcp <ip>:<port>: i/o timeout` при перебалансировке кафки. см.:
 		// https://github.com/IBM/sarama/issues/1192
 		case <-session.Context().Done():
+			log.Printf("session context done\n")
 			return nil
 		}
 	}
