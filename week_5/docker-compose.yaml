@@ -1,14 +1,77 @@
-version: '3'
+version: "3.8"
 
-volumes:
-  postgres_volume:
+networks:
+  net:
+    driver: bridge
 
 services:
-  pg-local:
-    image: postgres:14-alpine3.17
-    env_file:
-      - .env
+  # kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
     ports:
-      - "54321:5432"
-    volumes:
-      - postgres_volume:/var/lib/postgresql/data
+      - "2181:2181" # основной порт для клиентских соединений Zookeeper
+      - "2888:2888" # порт для соединений между узлами Zookeeper
+      - "3888:3888" # порт для выбора лидера в кластере Zookeeper
+    healthcheck:
+      test: echo stat | nc localhost 2181 # проверяет, доступен ли Zookeeper на порту 2181
+      interval: 10s # интервал между проверками 10 секунд
+      timeout: 10s # таймаут проверки 10 секунд
+      retries: 3 # количество попыток проверки
+    environment:
+      - "ZOOKEEPER_SERVER_ID=1" # уникальный идентификатор сервера Zookeeper
+      - "ZOOKEEPER_CLIENT_PORT=2181" # порт для клиентских соединений Zookeeper
+      - "ZOOKEEPER_TICK_TIME=2000" # основной интервал времени (в миллисекундах), используемый Zookeeper
+      - "ZOOKEEPER_INIT_LIMIT=5" # максимальное количество тиков для начальной синхронизации
+      - "ZOOKEEPER_SYNC_LIMIT=2" # максимальное количество тиков, которые могут пройти между синхронизацией узлов
+      - "ZOOKEEPER_SERVERS=zookeeper:2888:3888" # адреса других серверов в кластере
+
+  kafka1:
+    image: confluentinc/cp-kafka:7.6.1
+    healthcheck:
+      test: ps augwwx | egrep [S]upportedKafka # проверяет, что Kafka запущен
+    depends_on:
+      - zookeeper # указывает, что Kafka зависит от сервиса Zookeeper и будет запущен после него
+    ports:
+      - "9091:9091" # порт для клиентских соединений Kafka
+    environment:
+      - "KAFKA_LISTENERS=LISTENER_INT://kafka1:29091,LISTENER_EXT://0.0.0.0:9091" # указывает внутренние и внешние слушатели для Kafka
+      - "KAFKA_ADVERTISED_LISTENERS=LISTENER_INT://kafka1:29091,LISTENER_EXT://localhost:9091" # указывает, какие адреса будут использоваться для общения с Kafka
+      - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=LISTENER_INT:PLAINTEXT,LISTENER_EXT:PLAINTEXT" # указывает протоколы безопасности для слушателей
+      - "KAFKA_INTER_BROKER_LISTENER_NAME=LISTENER_INT" # указывает имя слушателя для внутренней коммуникации брокеров
+      - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181" # адрес подключения к Zookeeper
+      - "KAFKA_BROKER_ID=1" # уникальный идентификатор брокера Kafka
+      - "ZOOKEEPER=zookeeper:2181" # адрес Zookeeper
+
+  kafka2:
+    image: confluentinc/cp-kafka:7.6.1
+    healthcheck:
+      test: ps augwwx | egrep [S]upportedKafka # проверяет, что Kafka запущен
+    depends_on:
+      - zookeeper # указывает, что Kafka зависит от сервиса Zookeeper и будет запущен после него
+    ports:
+      - "9092:9092" # порт для клиентских соединений Kafka
+    environment:
+      - "KAFKA_LISTENERS=LISTENER_INT://kafka1:29091,LISTENER_EXT://0.0.0.0:9091" # указывает внутренние и внешние слушатели для Kafka
+      - "KAFKA_ADVERTISED_LISTENERS=LISTENER_INT://kafka1:29091,LISTENER_EXT://localhost:9091" # указывает, какие адреса будут использоваться для общения с Kafka
+      - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=LISTENER_INT:PLAINTEXT,LISTENER_EXT:PLAINTEXT" # указывает протоколы безопасности для слушателей
+      - "KAFKA_INTER_BROKER_LISTENER_NAME=LISTENER_INT" # указывает имя слушателя для внутренней коммуникации брокеров
+      - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181" # адрес подключения к Zookeeper
+      - "KAFKA_BROKER_ID=1" # уникальный идентификатор брокера Kafka
+      - "ZOOKEEPER=zookeeper:2181" # адрес Zookeeper
+
+  kafka3:
+    image: confluentinc/cp-kafka:7.6.1
+    healthcheck:
+      test: ps augwwx | egrep [S]upportedKafka # проверяет, что Kafka запущен
+    depends_on:
+      - zookeeper # указывает, что Kafka зависит от сервиса Zookeeper и будет запущен после него
+    ports:
+      - "9093:9093" # порт для клиентских соединений Kafka
+    environment:
+      - "KAFKA_LISTENERS=LISTENER_INT://kafka1:29091,LISTENER_EXT://0.0.0.0:9091" # указывает внутренние и внешние слушатели для Kafka
+      - "KAFKA_ADVERTISED_LISTENERS=LISTENER_INT://kafka1:29091,LISTENER_EXT://localhost:9091" # указывает, какие адреса будут использоваться для общения с Kafka
+      - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=LISTENER_INT:PLAINTEXT,LISTENER_EXT:PLAINTEXT" # указывает протоколы безопасности для слушателей
+      - "KAFKA_INTER_BROKER_LISTENER_NAME=LISTENER_INT" # указывает имя слушателя для внутренней коммуникации брокеров
+      - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181" # адрес подключения к Zookeeper
+      - "KAFKA_BROKER_ID=1" # уникальный идентификатор брокера Kafka
+      - "ZOOKEEPER=zookeeper:2181" # адрес Zookeeper
